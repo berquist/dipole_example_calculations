@@ -1,0 +1,9 @@
+# Python
+*.py[co]
+
+# ORCA
+*.gbw
+*.prop
+
+# Q-Chem
+pathtable

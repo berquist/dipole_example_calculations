@@ -1,0 +1,14 @@
+$rem
+ method hf
+ basis sto-3g
+ scf_guess core
+ scf_convergence 11
+ symmetry false
+ sym_ignore true
+$end
+
+$molecule
+0 2
+H 0.000 0.000 0.000
+O 0.000 0.000 0.9697
+$end

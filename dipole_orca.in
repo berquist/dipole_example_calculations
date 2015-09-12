@@ -1,0 +1,6 @@
+! uhf sto-3g verytightscf hcore nousesym
+
+* xyz 0 2
+H 0.000 0.000 0.000
+O 0.000 0.000 0.9697
+*
