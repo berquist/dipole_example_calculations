@@ -1,6 +1,9 @@
 # Python
 *.py[co]
 
+# PyQuante
+pyquante.log
+
 # ORCA
 *.gbw
 *.prop

@@ -1,6 +1,7 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 
 from __future__ import print_function
+from __future__ import division
 
 import numpy as np
 import numpy.linalg as npl
@@ -8,6 +9,62 @@ import numpy.linalg as npl
 import pyquante2
 from pyquante2.geo.molecule import molecule
 from pyints.one import makeM
+
+
+def getargs():
+
+    import argparse
+
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('--debug',
+                        action='store_true')
+    parser.add_argument('--trafo-type',
+                        choices=(
+                            'density',
+                            'density_explicit',
+                            'mocoeff_occ',
+                            'mocoeff_occ_explicit',
+                            'mocoeff_all',
+                            'mocoeff_all_explicit',
+                        ),
+                        default='density')
+
+    args = parser.parse_args()
+
+    return args
+
+
+def ao_mo_trafo(C_left, C_right, mat_AO, trafo_type='density', C_left_idx=None, C_right_idx=None):
+    """"""
+
+    if trafo_type == 'density':
+        D = np.dot(C_left[:, :C_left_idx], C_right[:, :C_right_idx].T)
+        mat_MO = D * mat_AO
+    elif trafo_type == 'density_explicit':
+        D = np.zeros(shape=(C_left.shape[0], C_right.T.shape[0]))
+        for mu in range(C_left.shape[0]):
+            for nu in range(C_right.shape[0]):
+                for i in range(C_left_idx):
+                    D[mu, nu] += C_left[mu, i] * C_right[nu, i].T
+        mat_MO = D * mat_AO
+    elif trafo_type == 'mocoeff_occ':
+        mat_MO = C_left[:, :C_left_idx] * mat_AO * C_right[:, :C_right_idx]
+    elif trafo_type == 'mocoeff_occ_explicit':
+        mat_MO = np.zeros(shape=(C_left.shape[0], C_right.T.shape[0]))
+        for mu in range(C_left.shape[0]):
+            for nu in range():
+                for i in range():
+                    for j in range():
+                        mat_MO[mu, nu] += C_left[mu, i].T * mat_AO[mu, nu] * C_right[nu, j]
+    elif trafo_type == 'mocoeff_all':
+        mat_MO = C_left * mat_AO * C_right.T
+    elif trafo_type == 'mocoeff_all_explicit':
+        pass
+    else:
+        mat_MO = mat_AO
+
+    return mat_MO
 
 
 def calc_center_of_mass(mol):
@@ -20,7 +77,7 @@ def nuclear_dipole_contribution(mol, origin_in_bohrs):
     return sum(atom.Z * (atom.r - origin_in_bohrs) for atom in mol.atoms)
 
 
-def main(debug=False):
+def main(args):
 
     mol = molecule([(1, 0.000, 0.000, 0.000),
                     (8, 0.000, 0.000, 0.9697)],
@@ -29,7 +86,7 @@ def main(debug=False):
                    multiplicity=2,
                    name='hydroxyl_radical')
 
-    mol_basis = pyquante2.basisset(mol, 'STO-3G')
+    mol_basis = pyquante2.basisset(mol, 'STO-3G'.lower())
 
     solver = pyquante2.uhf(mol, mol_basis)
     solver.converge(tol=1e-11, maxiters=1000)
@@ -44,7 +101,7 @@ def main(debug=False):
     D_beta = np.dot(C_beta[:, :NOb], C_beta[:, :NOb].transpose())
     D = D_alph + D_beta
 
-    if debug:
+    if args.debug:
         print(D_alph)
         print(D_beta)
 
@@ -61,7 +118,7 @@ def main(debug=False):
     M010_MO = D * M010_AO
     M001_MO = D * M001_AO
 
-    if debug:
+    if args.debug:
         print('M100_AO')
         print(M100_AO)
         print('M010_AO')
@@ -103,4 +160,5 @@ def main(debug=False):
 
 
 if __name__ == '__main__':
-    main(debug=True)
+    args = getargs()
+    main(args)
