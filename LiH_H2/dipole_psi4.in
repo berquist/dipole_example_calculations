@@ -1,0 +1,17 @@
+molecule {
+    Li        -1.67861        0.61476       -0.00041
+    H         -0.01729        0.38654       -0.00063
+    H         -0.84551        3.08551       -0.00236
+    H         -0.46199        3.67980       -0.03270
+    units angstrom
+    symmetry c1
+    no_reorient
+    no_com
+}
+
+set {
+    basis sto-3g
+    scf_type direct
+}
+
+energy('hf')

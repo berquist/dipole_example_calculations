@@ -1,0 +1,28 @@
+ $contrl
+   scftyp=rhf
+   runtyp=energy
+ $end
+
+ $basis
+   gbasis=sto
+   ngauss=3
+ $end
+
+ $elmom
+   iemom=1
+   where=points
+ $end
+
+ $points
+angs 1
+0.0 0.0 0.0
+ $end
+
+ $data
+
+C1
+Li 3.0 -1.67861 0.61476 -0.00041
+ H 1.0 -0.01729 0.38654 -0.00063
+ H 1.0 -0.84551 3.08551 -0.00236
+ H 1.0 -0.46199 3.67980 -0.03270
+ $end

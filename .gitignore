@@ -1,5 +1,7 @@
 # Python
 *.py[co]
+.coverage
+htmlcov/
 
 # PyQuante
 pyquante.log

@@ -1,0 +1,27 @@
+BASIS
+STO-3G
+---
+---
+Atomtypes=2 Angstrom Charge=0 Nosymmetry
+Charge=3.0 Atoms=1
+Li        -1.67861        0.61476       -0.00041
+Charge=1.0 Atoms=3
+H         -0.01729        0.38654       -0.00063
+H         -0.84551        3.08551       -0.00236
+H         -0.46199        3.67980       -0.03270
+
+**DALTON INPUT
+.RUN ALL
+**INTEGRALS
+.DIPLEN
+.DIPORG
+0.0 0.0 0.0
+**WAVE FUNCTIONS
+.HF
+*SCF INPUT
+.THRESH
+1.0D-8
+**PROPERTIES
+.DIPORG
+0.0 0.0 0.0
+**END OF DALTON INPUT
