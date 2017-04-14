@@ -55,10 +55,8 @@ def test_dipole_LiH_H2_HF_STO_3G():
     dalton_total_norm_au = 1.932564
     dalton_center_of_mass_au = np.array([-2.468120057069, 2.168586684080, -0.007311931664])
 
-    # WARNING: Don't use ORCA for comparison! What's the origin,
-    # center of mass? Center of nuclear charge?
+    # ORCA uses the center of mass?
 
-    #                                 X             Y             Z
     # Electronic contribution:     -4.65190      -3.56492       0.02433
     # Nuclear contribution   :      2.75658       3.94249      -0.02560
     #                         -----------------------------------------
