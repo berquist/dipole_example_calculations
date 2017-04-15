@@ -1,0 +1,17 @@
+molecule {
+    0 2
+    H 0.000 0.000 0.000
+    O 0.000 0.000 0.9697
+    units angstrom
+    symmetry c1
+    no_reorient
+    no_com
+}
+
+set {
+    reference uhf
+    basis sto-3g
+    scf_type direct
+}
+
+energy('hf')

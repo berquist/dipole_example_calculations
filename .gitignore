@@ -12,3 +12,6 @@ pyquante.log
 
 # Q-Chem
 pathtable
+
+# Psi4
+timer.dat
