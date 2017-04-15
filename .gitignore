@@ -2,6 +2,7 @@
 *.py[co]
 .coverage
 htmlcov/
+.cache/
 
 # PyQuante
 pyquante.log
