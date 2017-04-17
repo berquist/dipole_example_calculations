@@ -2,6 +2,8 @@
 dipole.py.
 """
 
+# pylint: disable=invalid-name,unused-variable
+
 from __future__ import print_function
 from __future__ import division
 
@@ -10,16 +12,16 @@ import numpy.linalg as npl
 
 import pyquante2
 from pyquante2.geo.molecule import molecule
-from pyints.one import makeM
 
 from dipole import (nuclear_dipole_contribution,
                     nuclear_dipole_contribution_pyquante,
-                    electronic_dipole_contribution,
+                    electronic_dipole_contribution_pyquante,
                     get_isotopic_masses, calc_center_of_mass_pyquante,
                     calc_center_of_mass,
                     calc_center_of_nuclear_charge,
                     calc_center_of_electronic_charge_pyquante,
-                    calculate_origin, calculate_dipole)
+                    calculate_origin_pyquante,
+                    calculate_dipole_pyquante)
 
 
 def screen(mat, thresh=1.0e-16):
@@ -145,7 +147,7 @@ def test_dipole_LiH_H2_HF_STO_3G():
     assert np.all(abs_diff < 1.0e-4)
 
     ref = psi4_electronic_components_au
-    res = electronic_dipole_contribution(D, mol_basis, origin_zero)
+    res = electronic_dipole_contribution_pyquante(D, mol_basis, origin_zero)
     abs_diff = np.absolute(ref - res)
     assert np.all(abs_diff < 1.0e-4)
 
@@ -170,20 +172,20 @@ def test_dipole_LiH_H2_HF_STO_3G():
     ecc = calc_center_of_electronic_charge_pyquante(D, mol_basis)
     assert np.all((ecc - np.array([-1.68741793, 2.77044101, -0.01141657])) < 1.0e-8)
 
-    origin_zero = calculate_origin('zero', nuccoords, nuccharges, D, mol_basis, do_print=True)
-    dipole_zero = calculate_dipole(nuccoords, nuccharges, origin_zero, D, mol_basis, do_print=True)
-    origin_com = calculate_origin('com', nuccoords, nuccharges, D, mol_basis, do_print=True)
-    dipole_com = calculate_dipole(nuccoords, nuccharges, origin_com, D, mol_basis, do_print=True)
-    origin_ncc = calculate_origin('ncc', nuccoords, nuccharges, D, mol_basis, do_print=True)
-    dipole_ncc = calculate_dipole(nuccoords, nuccharges, origin_ncc, D, mol_basis, do_print=True)
-    origin_ecc = calculate_origin('ecc', nuccoords, nuccharges, D, mol_basis, do_print=True)
-    dipole_ecc = calculate_dipole(nuccoords, nuccharges, origin_ecc, D, mol_basis, do_print=True)
+    origin_zero = calculate_origin_pyquante('zero', nuccoords, nuccharges, D, mol_basis, do_print=True)
+    dipole_zero = calculate_dipole_pyquante(nuccoords, nuccharges, origin_zero, D, mol_basis, do_print=True)
+    origin_com = calculate_origin_pyquante('com', nuccoords, nuccharges, D, mol_basis, do_print=True)
+    dipole_com = calculate_dipole_pyquante(nuccoords, nuccharges, origin_com, D, mol_basis, do_print=True)
+    origin_ncc = calculate_origin_pyquante('ncc', nuccoords, nuccharges, D, mol_basis, do_print=True)
+    dipole_ncc = calculate_dipole_pyquante(nuccoords, nuccharges, origin_ncc, D, mol_basis, do_print=True)
+    origin_ecc = calculate_origin_pyquante('ecc', nuccoords, nuccharges, D, mol_basis, do_print=True)
+    dipole_ecc = calculate_dipole_pyquante(nuccoords, nuccharges, origin_ecc, D, mol_basis, do_print=True)
 
     # ORCA: center of mass; TODO why is the answer so different?
     n_dipole_com_au = nuclear_dipole_contribution(nuccoords, nuccharges, origin_com)
     assert np.all(np.equal(np.sign(n_dipole_com_au), np.sign(orca_nuclear_components_au)))
     print(np.absolute(orca_nuclear_components_au - n_dipole_com_au))
-    e_dipole_com_au = electronic_dipole_contribution(D, mol_basis, origin_com)
+    e_dipole_com_au = electronic_dipole_contribution_pyquante(D, mol_basis, origin_com)
     assert np.all(np.equal(np.sign(e_dipole_com_au), np.sign(orca_electronic_components_au)))
     print(np.absolute(orca_electronic_components_au - e_dipole_com_au))
 
@@ -315,7 +317,7 @@ def test_dipole_hydroxyl_radical_HF_STO_3G():
     assert np.all(abs_diff < 1.0e-4)
 
     ref = psi4_electronic_components_au
-    res = electronic_dipole_contribution(D, mol_basis, origin_zero)
+    res = electronic_dipole_contribution_pyquante(D, mol_basis, origin_zero)
     abs_diff = np.absolute(ref - res)
     assert np.all(abs_diff < 1.0e-4)
 
@@ -343,14 +345,14 @@ def test_dipole_hydroxyl_radical_HF_STO_3G():
     assert np.all(np.equal(np.sign(ecc), np.sign(orca_center_of_electronic_charge_au)))
     assert np.all((ecc - orca_center_of_electronic_charge_au) < 1.0e-8)
 
-    origin_zero = calculate_origin('zero', nuccoords, nuccharges, D, mol_basis, do_print=True)
-    dipole_zero = calculate_dipole(nuccoords, nuccharges, origin_zero, D, mol_basis, do_print=True)
-    origin_com = calculate_origin('com', nuccoords, nuccharges, D, mol_basis, do_print=True)
-    dipole_com = calculate_dipole(nuccoords, nuccharges, origin_com, D, mol_basis, do_print=True)
-    origin_ncc = calculate_origin('ncc', nuccoords, nuccharges, D, mol_basis, do_print=True)
-    dipole_ncc = calculate_dipole(nuccoords, nuccharges, origin_ncc, D, mol_basis, do_print=True)
-    origin_ecc = calculate_origin('ecc', nuccoords, nuccharges, D, mol_basis, do_print=True)
-    dipole_ecc = calculate_dipole(nuccoords, nuccharges, origin_ecc, D, mol_basis, do_print=True)
+    origin_zero = calculate_origin_pyquante('zero', nuccoords, nuccharges, D, mol_basis, do_print=True)
+    dipole_zero = calculate_dipole_pyquante(nuccoords, nuccharges, origin_zero, D, mol_basis, do_print=True)
+    origin_com = calculate_origin_pyquante('com', nuccoords, nuccharges, D, mol_basis, do_print=True)
+    dipole_com = calculate_dipole_pyquante(nuccoords, nuccharges, origin_com, D, mol_basis, do_print=True)
+    origin_ncc = calculate_origin_pyquante('ncc', nuccoords, nuccharges, D, mol_basis, do_print=True)
+    dipole_ncc = calculate_dipole_pyquante(nuccoords, nuccharges, origin_ncc, D, mol_basis, do_print=True)
+    origin_ecc = calculate_origin_pyquante('ecc', nuccoords, nuccharges, D, mol_basis, do_print=True)
+    dipole_ecc = calculate_dipole_pyquante(nuccoords, nuccharges, origin_ecc, D, mol_basis, do_print=True)
 
     # For an uncharged system, these should all be identical.
     my_ref = np.array([0.0, 0.0, -0.5031245309396919])
@@ -362,4 +364,3 @@ def test_dipole_hydroxyl_radical_HF_STO_3G():
 if __name__ == '__main__':
     test_dipole_LiH_H2_HF_STO_3G()
     test_dipole_hydroxyl_radical_HF_STO_3G()
-    pass
