@@ -42,6 +42,7 @@ def calc_center_of_mass_pyquante(mol):
 
 
 def calc_center_of_mass(coords, masses):
+    assert len(masses.shape) == 1
     denominator = np.sum(masses)
     numerator = np.sum(coords * masses[..., np.newaxis], axis=0)
     return numerator / denominator
@@ -62,7 +63,7 @@ def calc_center_of_electronic_charge_pyquante(D, mol_basis):
     dipole_at_zerovec = electronic_dipole_contribution(D, mol_basis, zerovec)
     S = makeS(mol_basis)
     nelec = np.trace(np.dot(D, S))
-    return dipole_at_zerovec / nelec
+    return -dipole_at_zerovec / nelec
 
 
 def nuclear_dipole_contribution_pyquante(mol, origin_in_bohrs):
@@ -95,7 +96,7 @@ def electronic_dipole_contribution(D, mol_basis, origin_in_bohrs):
     assert D.shape[0] == D.shape[1]
     assert isinstance(origin_in_bohrs, np.ndarray)
     assert origin_in_bohrs.shape == (3,)
-    # TODO what to assert about mol_basis?
+    # TODO what to assert about mol_basis? at least isinstance
 
     M100_AO = makeM(mol_basis.bfs, origin_in_bohrs, [1, 0, 0])
     M010_AO = makeM(mol_basis.bfs, origin_in_bohrs, [0, 1, 0])

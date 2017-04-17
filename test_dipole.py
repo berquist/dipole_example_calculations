@@ -1,3 +1,7 @@
+"""test_dipole.py: Tests for the dipole calculation routines found in
+dipole.py.
+"""
+
 from __future__ import print_function
 from __future__ import division
 
@@ -18,7 +22,18 @@ from dipole import (nuclear_dipole_contribution,
                     calculate_origin, calculate_dipole)
 
 
+def screen(mat, thresh=1.0e-16):
+    """Set all values smaller than the given threshold to zero
+    (considering them as numerical noise).
+    """
+    mat_screened = mat.copy()
+    mat_screened[np.abs(mat) <= thresh] = 0.0
+    return mat_screened
+
+
 def test_dipole_LiH_H2_HF_STO_3G():
+    """Example: LiH--H2, neutral singlet, RHF/STO-3G
+    """
 
     #   X      -4.8174      Y       0.9597      Z      -0.0032
     # Tot       4.9121
@@ -55,7 +70,7 @@ def test_dipole_LiH_H2_HF_STO_3G():
     dalton_total_norm_au = 1.932564
     dalton_center_of_mass_au = np.array([-2.468120057069, 2.168586684080, -0.007311931664])
 
-    # ORCA uses the center of mass?
+    # ORCA uses the center of mass by default.
 
     # Electronic contribution:     -4.65190      -3.56492       0.02433
     # Nuclear contribution   :      2.75658       3.94249      -0.02560
@@ -64,10 +79,10 @@ def test_dipole_LiH_H2_HF_STO_3G():
     #                         -----------------------------------------
     # Magnitude (a.u.)       :      1.93256
     # Magnitude (Debye)      :      4.91219
-    orca_electronic_components_au = np.array([-4.65190, -3.56492,  0.02433])
+    orca_electronic_components_au = np.array([-4.65190, -3.56492, 0.02433])
     orca_nuclear_components_au = np.array([2.75658, 3.94249, -0.02560])
     orca_total_components_au = np.array([-1.89532, 0.37758, -0.00127])
-    assert (((orca_nuclear_components_au + orca_electronic_components_au) - orca_total_components_au) < 1.0e-14).all()
+    assert np.all(((orca_nuclear_components_au + orca_electronic_components_au) - orca_total_components_au) < 1.0e-14)
     orca_total_norm_au = 1.93256
     assert abs(orca_total_norm_au - npl.norm(orca_total_components_au)) < 1.0e-5
     orca_total_norm_debye = 4.91219
@@ -87,13 +102,14 @@ def test_dipole_LiH_H2_HF_STO_3G():
     psi4_nuclear_components_au = np.array([-12.0198, 17.0002, -0.0698])
     psi4_electronic_components_au = np.array([10.1245, -16.6226, 0.0685])
     psi4_total_components_au = np.array([-1.8953, 0.3776, -0.0013])
-    assert (((psi4_nuclear_components_au + psi4_electronic_components_au) - psi4_total_components_au) < 1.0e-14).all()
+    assert np.all(((psi4_nuclear_components_au + psi4_electronic_components_au) - psi4_total_components_au) < 1.0e-14)
     psi4_total_norm_au = 1.9326
     assert abs(psi4_total_norm_au - npl.norm(psi4_total_components_au)) < 1.0e-4
     psi4_total_components_debye = np.array([-4.8174, 0.9597, -0.0032])
     psi4_total_norm_debye = 4.9121
     assert abs(psi4_total_norm_debye - npl.norm(psi4_total_components_debye)) < 1.0e-4
 
+    # pylint: disable=bad-whitespace
     mol = molecule(
         [
             (3,        -1.67861,        0.61476,       -0.00041),
@@ -115,8 +131,6 @@ def test_dipole_LiH_H2_HF_STO_3G():
     solver = pyquante2.rhf(mol, mol_basis)
     solver.converge(tol=1e-11, maxiters=1000)
 
-    # print(solver)
-
     C = solver.orbs
     NOa = mol.nup()
     NOb = mol.ndown()
@@ -128,31 +142,33 @@ def test_dipole_LiH_H2_HF_STO_3G():
     ref = psi4_nuclear_components_au
     res = nuclear_dipole_contribution(nuccoords, nuccharges, origin_zero)
     abs_diff = np.absolute(ref - res)
-    assert (abs_diff < 1.0e-4).all()
+    assert np.all(abs_diff < 1.0e-4)
 
     ref = psi4_electronic_components_au
     res = electronic_dipole_contribution(D, mol_basis, origin_zero)
     abs_diff = np.absolute(ref - res)
-    assert (abs_diff < 1.0e-4).all()
+    assert np.all(abs_diff < 1.0e-4)
 
     res1 = nuclear_dipole_contribution(nuccoords, nuccharges, origin_zero)
     res2 = nuclear_dipole_contribution_pyquante(mol, origin_zero)
-    assert ((res1 - res2) < 1.0e-15).all()
+    assert np.all((res1 - res2) < 1.0e-15)
 
     ref = dalton_center_of_mass_au
     res = calc_center_of_mass_pyquante(mol)
     abs_diff = np.absolute(ref - res)
-    assert (abs_diff < 1.0e-6).all()
+    assert np.all(abs_diff < 1.0e-6)
     com = res
+
+    assert np.all(np.equal(np.sign(com), np.sign(ref)))
 
     res1 = calc_center_of_mass_pyquante(mol)
     res2 = calc_center_of_mass(nuccoords, masses)
-    assert ((res1 - res2) < 1.0e-15).all()
+    assert np.all((res1 - res2) < 1.0e-15)
 
     ncc = calc_center_of_nuclear_charge(nuccoords, nuccharges)
-    assert ((ncc - np.array([-2.00330482, 2.83337011, -0.01162811])) < 1.0e-8).all()
+    assert np.all((ncc - np.array([-2.00330482, 2.83337011, -0.01162811])) < 1.0e-8)
     ecc = calc_center_of_electronic_charge_pyquante(D, mol_basis)
-    assert ((ecc - np.array([1.68741793, -2.77044101, 0.01141657])) < 1.0e-8).all()
+    assert np.all((ecc - np.array([-1.68741793, 2.77044101, -0.01141657])) < 1.0e-8)
 
     origin_zero = calculate_origin('zero', nuccoords, nuccharges, D, mol_basis, do_print=True)
     dipole_zero = calculate_dipole(nuccoords, nuccharges, origin_zero, D, mol_basis, do_print=True)
@@ -163,15 +179,25 @@ def test_dipole_LiH_H2_HF_STO_3G():
     origin_ecc = calculate_origin('ecc', nuccoords, nuccharges, D, mol_basis, do_print=True)
     dipole_ecc = calculate_dipole(nuccoords, nuccharges, origin_ecc, D, mol_basis, do_print=True)
 
+    # ORCA: center of mass; TODO why is the answer so different?
+    n_dipole_com_au = nuclear_dipole_contribution(nuccoords, nuccharges, origin_com)
+    assert np.all(np.equal(np.sign(n_dipole_com_au), np.sign(orca_nuclear_components_au)))
+    print(np.absolute(orca_nuclear_components_au - n_dipole_com_au))
+    e_dipole_com_au = electronic_dipole_contribution(D, mol_basis, origin_com)
+    assert np.all(np.equal(np.sign(e_dipole_com_au), np.sign(orca_electronic_components_au)))
+    print(np.absolute(orca_electronic_components_au - e_dipole_com_au))
+
     # For an uncharged system, these should all be identical.
     my_ref = np.array([-1.89532134e+00, 3.77574623e-01, -1.26926571e-03])
     for res in (dipole_zero, dipole_com, dipole_ncc, dipole_ecc):
-        assert (np.absolute(my_ref - res) < 1.0e-8).all()
+        assert np.all(np.absolute(my_ref - res) < 1.0e-8)
 
     return
 
 
 def test_dipole_hydroxyl_radical_HF_STO_3G():
+    """Example: OH^{.}, neutral doublet, UHF/STO-3G
+    """
 
     qchem_final_energy = -74.3626375184
     # Dipole Moment (Debye)
@@ -205,7 +231,7 @@ def test_dipole_hydroxyl_radical_HF_STO_3G():
     dalton_total_norm_au = 0.502283
     dalton_center_of_mass_au = np.array([0.0, 0.0, 1.723849254747])
 
-    # ORCA uses the center of mass?
+    # ORCA uses the center of mass by default.
     orca_final_energy = -74.362637379044
     # Electronic contribution:      0.00000      -0.00000       0.35185
     # Nuclear contribution   :      0.00000       0.00000      -0.85498
@@ -217,10 +243,22 @@ def test_dipole_hydroxyl_radical_HF_STO_3G():
     orca_electronic_components_au = np.array([0.0, 0.0, 0.35185])
     orca_nuclear_components_au = np.array([0.0, 0.0, -0.85498])
     orca_total_components_au = np.array([0.0, 0.0, -0.50312])
-    assert (((orca_nuclear_components_au + orca_electronic_components_au) - orca_total_components_au) < 1.0e-14).all()
+    assert np.all(((orca_nuclear_components_au + orca_electronic_components_au) - orca_total_components_au) < 1.0e-14)
     orca_total_norm_au = 0.50312
     assert abs(orca_total_norm_au - npl.norm(orca_total_components_au)) < 1.0e-5
     orca_total_norm_debye = 1.27884
+
+    # prop_orca_coe.out
+    # 505:Coordinates of the origin    ...    0.00000000   -0.00000000    1.68476265 (bohrs)
+
+    # prop_orca_com.out
+    # 505:Coordinates of the origin    ...    0.00000000    0.00000000    1.72385761 (bohrs)
+
+    # prop_orca_con.out
+    # 505:Coordinates of the origin    ...    0.00000000    0.00000000    1.62885994 (bohrs)
+    orca_center_of_electronic_charge_au = np.array([0.00000000, 0.00000000, 1.68476265])
+    orca_center_of_mass_au = np.array([0.00000000, 0.00000000, 1.72385761])
+    orca_center_of_nuclear_charge_au = np.array([0.00000000, 0.00000000, 1.62885994])
 
     psi4_final_energy = -74.3626375190713986
     # Origin is the Cartesian origin
@@ -238,7 +276,7 @@ def test_dipole_hydroxyl_radical_HF_STO_3G():
     psi4_nuclear_components_au = np.array([0.0, 0.0, 14.6597])
     psi4_electronic_components_au = np.array([0.0, 0.0, -15.1629])
     psi4_total_components_au = np.array([0.0, 0.0, -0.5031])
-    assert (((psi4_nuclear_components_au + psi4_electronic_components_au) - psi4_total_components_au) < 1.0e-14).all()
+    assert np.all(((psi4_nuclear_components_au + psi4_electronic_components_au) - psi4_total_components_au) < 1.0e-14)
     psi4_total_norm_au = 0.5031
     assert abs(psi4_total_norm_au - npl.norm(psi4_total_components_au)) < 1.0e-4
     psi4_total_components_debye = np.array([0.0, 0.0, -1.2788])
@@ -274,31 +312,36 @@ def test_dipole_hydroxyl_radical_HF_STO_3G():
     ref = psi4_nuclear_components_au
     res = nuclear_dipole_contribution(nuccoords, nuccharges, origin_zero)
     abs_diff = np.absolute(ref - res)
-    assert (abs_diff < 1.0e-4).all()
+    assert np.all(abs_diff < 1.0e-4)
 
     ref = psi4_electronic_components_au
     res = electronic_dipole_contribution(D, mol_basis, origin_zero)
     abs_diff = np.absolute(ref - res)
-    assert (abs_diff < 1.0e-4).all()
+    assert np.all(abs_diff < 1.0e-4)
 
     res1 = nuclear_dipole_contribution(nuccoords, nuccharges, origin_zero)
     res2 = nuclear_dipole_contribution_pyquante(mol, origin_zero)
-    assert ((res1 - res2) < 1.0e-15).all()
+    assert np.all((res1 - res2) < 1.0e-15)
 
     ref = dalton_center_of_mass_au
     res = calc_center_of_mass_pyquante(mol)
     abs_diff = np.absolute(ref - res)
-    assert (abs_diff < 1.0e-6).all()
+    assert np.all(abs_diff < 1.0e-6)
     com = res
+
+    assert np.all(np.equal(np.sign(com), np.sign(orca_center_of_mass_au)))
+    assert np.all(np.equal(np.sign(com), np.sign(ref)))
 
     res1 = calc_center_of_mass_pyquante(mol)
     res2 = calc_center_of_mass(nuccoords, masses)
-    assert ((res1 - res2) < 1.0e-15).all()
+    assert np.all((res1 - res2) < 1.0e-15)
 
     ncc = calc_center_of_nuclear_charge(nuccoords, nuccharges)
-    assert ((ncc - np.array([0.0, 0.0, 1.62885981])) < 1.0e-8).all()
-    ecc = calc_center_of_electronic_charge_pyquante(D, mol_basis)
-    assert ((ecc - np.array([0.0, 0.0, -1.68476254])) < 1.0e-8).all()
+    assert np.all(np.equal(np.sign(ncc), np.sign(orca_center_of_nuclear_charge_au)))
+    assert np.all((ncc - orca_center_of_nuclear_charge_au) < 1.0e-8)
+    ecc = screen(calc_center_of_electronic_charge_pyquante(D, mol_basis))
+    assert np.all(np.equal(np.sign(ecc), np.sign(orca_center_of_electronic_charge_au)))
+    assert np.all((ecc - orca_center_of_electronic_charge_au) < 1.0e-8)
 
     origin_zero = calculate_origin('zero', nuccoords, nuccharges, D, mol_basis, do_print=True)
     dipole_zero = calculate_dipole(nuccoords, nuccharges, origin_zero, D, mol_basis, do_print=True)
